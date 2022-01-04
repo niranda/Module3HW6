@@ -1,26 +1,32 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using ShopApp.Services.Abstractions;
-using ShopApp.Providers.Abstractions;
-using ShopApp.Providers;
-using ShopApp.Services;
+﻿using System;
+using System.Threading.Tasks;
 
-namespace StyleCop.Main
+namespace ShopApp.Main
 {
     public class Program
     {
         public static void Main(string[] args)
         {
-            var serviceProvider = new ServiceCollection()
-                .AddTransient<ILoggerProvider, LoggerProvider>()
-                .AddTransient<IActionsService, ActionsService>()
-                .AddSingleton<IConfigService, ConfigService>()
-                .AddSingleton<ILoggerService, LoggerService>()
-                .AddTransient<IFileService, FileService>()
-                .AddTransient<Starter>()
-                .BuildServiceProvider();
+            var messageBox = new MessageBox();
 
-            var start = serviceProvider.GetService<Starter>();
-            start.Run();
+            var tcs = new TaskCompletionSource();
+
+            messageBox.StateNotify += (state) =>
+            {
+                if (state != State.Ok)
+                {
+                    Console.WriteLine("Ok");
+                }
+                else
+                {
+                    Console.WriteLine("Cancel");
+                }
+
+                tcs.SetResult();
+            };
+
+            messageBox.Open();
+            tcs.Task.GetAwaiter().GetResult();
         }
     }
 }
